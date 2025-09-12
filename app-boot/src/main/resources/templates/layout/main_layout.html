@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- config.html 에서 th:fragment 로 선언한 config 부분을 가져온다 -->
+    <th:block th:replace="~{fragments/config::config}"></th:block>
+  </head>
+  <body>
+    <!-- header.html 에서 th:fragment 로 선언한 header 부분을 가져온다 -->
+    <div th:replace="~{fragments/header::header}"></div>
+    <div layout:fragment="content"></div>
+  </body>
+</html>
