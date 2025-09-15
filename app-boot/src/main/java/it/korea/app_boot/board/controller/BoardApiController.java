@@ -82,7 +82,7 @@ public class BoardApiController {
         // (현재 페이지, 가져올 개수, order by 객체) 를 전달한다
         Pageable pageable = PageRequest.of(searchDTO.getPage(), searchDTO.getSize(), Sort.by(sorts));
 
-        resultMap = jpaService.getBoardList(pageable);
+        resultMap = jpaService.getBoardList(searchDTO, pageable);
 
         return new ResponseEntity<>(resultMap, status);
     }

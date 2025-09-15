@@ -7,16 +7,54 @@
 >
   <th:block layout:fragment="css">
     <style>
-      .contents {
+      .contents{
         margin: 0 auto;
         margin-top: 10vh;
         width: 100%;
         height: 100vh;
       }
 
-      .dataTables {
+      .dataTables{
         table-layout: fixed;
       }
+
+      .sch-box{
+        display: flex;
+        width: 100%;
+        align-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .sch-item{
+        display: flex;
+        gap: 5px;
+        flex: 1;
+      }
+
+      .sch-button{
+        flex: 1;
+        text-align: right;
+      }
+
+      #schType{
+        flex: 0 0 120px;
+        height: 36px;
+      }
+
+      .sch-item .form-control{
+        flex: 1 1 auto;
+        min-width: 150px;
+        width: 100%;
+        height: 36px;
+      }
+
+      .sch-item button{
+        flex: 0 0 auto;
+        height: 36px;
+      }
+
+     
     </style>
   </th:block>
 
@@ -26,8 +64,18 @@
         <header class="text-center">
           <h2>게시판 리스트</h2>
         </header>
-        <section class="text-end">
-        	<button type="button" class="btn btn-success" onclick="writeBoard();">글쓰기</button>
+        <section class="sch-box">
+          <div class="sch-item">
+            <select class="form-select" id="schType" name="schType">
+              <option value="title">제목</option>
+              <option value="writer">작성자</option>
+            </select>
+            <input type="text" class="form-control" id="schText" name="schText">
+            <button type="button" class="btn btn-primary" onclick="search();">검색</button>
+          </div>
+          <div class="sch-button">
+            <button type="button" class="btn btn-success" onclick="writeBoard();">글쓰기</button>
+          </div>
         </section>
         <section class="table-list">
           <table id="boardTable">
@@ -48,7 +96,7 @@
     <script>
       let dataTable;
 
-      // 컬럼별로 정렬하기 위해서 설정
+      // 컬럼별로 정렬하기 위해서 설정. 테이블의 thead 개수와 동일해야 한다.
       let dataColumns = [
         { data: "brdId" },
         { data: "title" },
@@ -57,6 +105,8 @@
         { data: "likeCount" },
         { data: "modifiedDate" },
       ];
+
+      let paramData = {};
 
       function drawData() {
         dataTable = $("#boardTable").DataTable({
@@ -82,6 +132,13 @@
 
               d.sidx = sidx.join(","); // 컬럼
               d.sord = sords.join(","); // 정렬
+
+              // paramData 객체 안에 값이 있다면... 즉, 검색 기능이 동작했다면
+              if (Object.keys(paramData).length > 0) {
+                // 검색 타입과 검색어 넘기기
+                d.schType = paramData.schType;
+                d.schText = paramData.schText;
+              }
             },
             dataFilter: function (data) {
               let jsonData = $.parseJSON(data); // json 객체를 일반 객체로 변경
@@ -108,6 +165,7 @@
           serverSide: true,
           pagingType: "full_numbers",
           lengthMenu: [10, 30, 50],
+          // lengthChange: false,
           displayLength: 10,
           columnDefs: [
             { target: 0, width: "10%" },
@@ -123,6 +181,16 @@
           ],
           columns: dataColumns,
         });
+      }
+
+      const search = ()=>{
+        const schType = $('#schType').val();
+        const schText = $('#schText').val();
+
+        // 리터럴 객체의 key 와 value 변수 이름이 같을 경우 축약 가능
+        paramData = {schType, schText};  // schType: schType, schText: schText 와 동일
+
+        $("#boardTable").DataTable().ajax.reload();  // 데이터 테이블 갱신
       }
 
       const writeBoard = ()=>{

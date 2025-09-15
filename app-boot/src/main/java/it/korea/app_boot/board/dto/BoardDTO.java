@@ -42,7 +42,8 @@ public class BoardDTO {
 
         // 마지막 수정날짜
         public LocalDateTime getModifiedDate() {
-            return this.updateDate == null ? this.createDate : this.updateDate;
+            //return this.updateDate == null ? this.createDate : this.updateDate;
+            return this.updateDate;
         }
     }
 
@@ -83,7 +84,8 @@ public class BoardDTO {
 
         // 마지막 수정날짜
         public LocalDateTime getModifiedDate() {
-            return this.updateDate == null ? this.createDate : this.updateDate;
+            //return this.updateDate == null ? this.createDate : this.updateDate;
+            return this.updateDate;
         }
     }
 

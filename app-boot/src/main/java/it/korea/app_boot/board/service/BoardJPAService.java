@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -25,10 +26,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import it.korea.app_boot.board.dto.BoardDTO;
 import it.korea.app_boot.board.dto.BoardFileDTO;
+import it.korea.app_boot.board.dto.BoardSearchDTO;
 import it.korea.app_boot.board.entity.BoardEntity;
 import it.korea.app_boot.board.entity.BoardFileEntity;
 import it.korea.app_boot.board.repository.BoardFileRepository;
 import it.korea.app_boot.board.repository.BoardRepository;
+import it.korea.app_boot.board.repository.BoardSearchSpecification;
 import it.korea.app_boot.common.files.FileUtils;
 import lombok.RequiredArgsConstructor;
 
@@ -49,11 +52,31 @@ public class BoardJPAService {
      * @return
      * @throws Exception
      */
-    public Map<String, Object> getBoardList(Pageable pageable) throws Exception {
+    public Map<String, Object> getBoardList(BoardSearchDTO searchDTO, Pageable pageable) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         
         // findAll() -> select * from board;
-        Page<BoardEntity> pageObj = boardRepository.findAll(pageable);
+        // Page<BoardEntity> pageObj = boardRepository.findAll(pageable);
+        Page<BoardEntity> pageObj = null;
+        
+        // 검색어를 입력해서 검색했을 경우
+        if (!StringUtils.isBlank(searchDTO.getSchType()) && !StringUtils.isBlank(searchDTO.getSchText())) {
+
+            // findBy 절을 커스텀해서 사용한 경우
+            // if (searchDTO.getSchType().equals("title")) {  // 제목으로 검색한 경우
+            //     pageObj = boardRepository.findByTitleContaining(searchDTO.getSchText(), pageable);
+            // } else if (searchDTO.getSchType().equals("writer")) { // 글쓴이로 검색한 경우
+            //     pageObj = boardRepository.findByWriterContaining(searchDTO.getSchText(), pageable);
+            // }
+
+            // BoardEntity boardEntity = new BoardEntity();
+            // BoardSearchSpecification searchSpecification = new BoardSearchSpecification(boardEntity, searchDTO);
+            BoardSearchSpecification searchSpecification = new BoardSearchSpecification(searchDTO);
+            pageObj = boardRepository.findAll(searchSpecification, pageable);
+
+        } else { // 그냥 페이지 불러올 경우 (검색어 없이 검색한 경우도 포함)
+            pageObj = boardRepository.findAll(pageable);
+        }
 
         //List<BoardDTO.Response> list = pageObj.getContent().stream().map(entity -> { return BoardDTO.Response.of(entity); }).toList();
         //List<BoardDTO.Response> list = pageObj.getContent().stream().map(entity -> BoardDTO.Response.of(entity)).toList();
@@ -139,39 +162,21 @@ public class BoardJPAService {
         // 1. 수정하기 위해 기존 정보를 불러온다 
         BoardEntity entity = boardRepository.getBoard(request.getBrdId())   // fetch join 을 사용한 getBoard 메서드 호출
             .orElseThrow(()-> new RuntimeException("게시글 없음"));
-        
+
         entity.setTitle(request.getTitle());
         entity.setContents(request.getContents());
+
+        BoardDTO.Detail detail = BoardDTO.Detail.of(entity);
         
         // 2. 업로드 할 파일이 있으면 기존 파일을 삭제한 후 등록 
         if (!request.getFile().isEmpty()) {
-            
-            // 2-1. 기존 파일 삭제 
-            // 게시글 엔티티가 가지고 있는 파일 엔티티 set 순회
-            for (BoardFileEntity fileEntity : entity.getFileList()) {	
-                // 파일 정보 
-                BoardFileDTO fileDTO = BoardFileDTO.of(fileEntity);
 
-                String fullPath = fileDTO.getFilePath() + fileDTO.getStoredName();
-                
-                // 파일 DB에서 삭제
-                fileRepository.deleteById(fileDTO.getBfId());
-
-                File file = new File(fullPath);
-
-                if (!file.exists()) {
-                    throw new NotFoundException("파일이 경로에 없음");
-                }
-
-                // 실제 파일 삭제
-                fileUtils.deleteFile(fullPath);
-                entity.delFiles(fileEntity);
-            }
-
-            // 2-2. 파일 업로드
+            // 2-1. 파일 업로드
             Map<String, Object> fileMap = fileUtils.uploadFiles(request.getFile(), filePath);
+
+            entity.getFileList().clear();  // 기존 파일 목록 비우기
             
-            // 2-3. 파일 등록
+            // 2-2. 파일 등록
             // 파일이 있을 경우에만 파일 엔티티 생성
             if (fileMap != null) {  
                 BoardFileEntity fileEntity = new BoardFileEntity();
@@ -183,10 +188,31 @@ public class BoardJPAService {
 
                 // 파일만 수정했을 경우에도 updateDate 를 갱신하기 위해서 isUpdate 값을 true 로 줌.
                 entity.addFiles(fileEntity, true);  // 게시글 엔티티와 파일 엔티티 관계를 맺어줌
-            } 
+            }
         }
 
         boardRepository.save(entity);
+
+        if (!request.getFile().isEmpty()) {
+            // 2-3. 기존 파일 삭제 (작업 도중 DB에 문제가 생길 수도 있기 때문에 물리적 파일 삭제는 제일 마지막에 진행)
+            // 게시글 상세 정보 DTO 가 가지고 있는 파일 DTO 리스트 순회
+            for (BoardFileDTO fileDTO : detail.getFileList()) {	
+                // 파일 정보
+                String fullPath = fileDTO.getFilePath() + fileDTO.getStoredName();
+                
+                //  entity.getFileList().clear(); 를 이미 했기 때문에 따로 파일 정보를 DB에서 삭제할 필요 없음
+                //fileRepository.deleteById(fileDTO.getBfId());
+
+                File file = new File(fullPath);
+
+                if (!file.exists()) {
+                    throw new NotFoundException("파일이 경로에 없음");
+                }
+
+                // 실제 파일 삭제
+                fileUtils.deleteFile(fullPath);
+            }
+        }
 
         resultMap.put("resultCode", 200);
         resultMap.put("resultMsg", "OK");
@@ -207,25 +233,24 @@ public class BoardJPAService {
         BoardEntity entity = boardRepository.getBoard(brdId)   // fetch join 을 사용한 getBoard 메서드 호출
             .orElseThrow(()-> new RuntimeException("게시글 없음"));
         
-        // 게시글 엔티티가 가지고 있는 파일 엔티티 set 순회
-        for (BoardFileEntity fileEntity : entity.getFileList()) {	
-            // 파일 정보 
-            BoardFileDTO fileDTO = BoardFileDTO.of(fileEntity);
-            String fullPath = fileDTO.getFilePath() + fileDTO.getStoredName();
-            
-            File file = new File(fullPath);
-
-            if (!file.exists()) {
-                throw new NotFoundException("파일이 경로에 없음");
-            }
-
-            // 실제 파일 삭제
-            fileUtils.deleteFile(fullPath);
-            // 게시글 엔티티가 가지고 있는 파일 엔티티 set 에서 제거
-            entity.delFiles(fileEntity);
-        }
+        BoardDTO.Detail detail = BoardDTO.Detail.of(entity);
 
         boardRepository.delete(entity);
+
+        // 실제 파일 삭제는 제일 마지막에 진행
+        if (detail.getFileList() != null && detail.getFileList().size() > 0) {
+            for (BoardFileDTO fileDTO : detail.getFileList()) {
+                String fullPath = fileDTO.getFilePath() + fileDTO.getStoredName();
+                File file = new File(fullPath);
+
+                if (!file.exists()) {
+                    throw new NotFoundException("파일이 경로에 없음");
+                }
+
+                // 실제 파일 삭제
+                fileUtils.deleteFile(fullPath);
+            }
+        }
 
         resultMap.put("resultCode", 200);
         resultMap.put("resultMsg", "OK");
@@ -309,14 +334,14 @@ public class BoardJPAService {
 
         BoardFileDTO fileDTO = BoardFileDTO.of(fileEntity);
 
-        // 게시글 엔티티 updateDate 갱신하기
-        BoardEntity boardEntity = fileEntity.getBoard();
-        boardEntity.preUpdate();
-        
         String fullPath = fileDTO.getFilePath() + fileDTO.getStoredName();
         
         // 파일 DB에서 삭제
-        fileRepository.deleteById(bfId);
+        fileRepository.delete(fileEntity);
+
+        // 게시글 엔티티 updateDate 갱신하기
+        BoardEntity boardEntity = fileEntity.getBoard();
+        boardEntity.preUpdate();
 
         File file = new File(fullPath);
         if (!file.exists()) {

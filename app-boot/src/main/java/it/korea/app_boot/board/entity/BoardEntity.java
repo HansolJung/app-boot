@@ -54,12 +54,4 @@ public class BoardEntity extends BaseEntity {
             this.preUpdate();  // board 의 updateDate 갱신
         }
     }
-
-    public void delFiles(BoardFileEntity entity) {
-        if (fileList == null) {
-            this.fileList = new HashSet<>();
-        }
-
-        fileList.remove(entity);
-    }
 }

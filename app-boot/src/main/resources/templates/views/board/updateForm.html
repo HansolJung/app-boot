@@ -80,7 +80,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td id="fileTd">
                                     <span th:if="${#lists.isEmpty(vo.fileList)}">없음</span>
                                     <ul class="file-list" th:unless="${#lists.isEmpty(vo.fileList)}">
                                         <li class="file-item" th:each="item : ${vo.fileList}">
@@ -158,8 +158,11 @@
                         .then((resp) => {
                             if (resp.data.resultCode === 200) {
                                 alert('파일이 삭제됐습니다.');
-                                const brdId = $('#brdId').val();
-                                location.href = `/board/update/${brdId}`;
+
+                                $('#fileTd').text('없음');  // 기존 내용 덮어쓰기
+
+                                //const brdId = $('#brdId').val();
+                                //location.href = `/board/update/${brdId}`;
                             } else {
                                 alert('파일 삭제에 실패했습니다.');
                             }

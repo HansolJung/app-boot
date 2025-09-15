@@ -9,6 +9,14 @@ public class BoardSearchDTO {
     private int size;
     private String sidx;
     private String sord;
+    private String schType;
+    private String schText;
+
+    public String getSidx() {
+        String newSidx = sidx.replaceAll("modifiedDate", "updateDate");
+
+        return newSidx;
+    }
 
     // 헤더 정렬 시 정렬 순서 만들어주기
     public String getOrderStr() {

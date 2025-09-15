@@ -23,9 +23,9 @@ public class BaseEntity implements Serializable {
     @Column(updatable = false)  // JPA 는 부분 업데이트가 없다. 그래서 값이 존재하면 그냥 업데이트를 해버리기 때문에 updatable = false 옵션을 줘야한다.
     private LocalDateTime createDate;
 
-    // 업데이트 될때만 갱신
+    @CreatedDate  // 생성될때 실행됨
     private LocalDateTime updateDate;
-
+    
     /**
      * 업데이트 시간 갱신
      * 업데이트 되기 전에 실행됨
