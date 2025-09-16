@@ -12,13 +12,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.HttpStatusAccessDeniedHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import it.korea.app_boot.common.handler.LoginFailureHanlder;
 import it.korea.app_boot.common.handler.LoginSuccessHandler;
@@ -55,7 +54,7 @@ public class SecurityConfig {
     // @Bean
     // public WebSecurityCustomizer webSecurityCustomizer() {
     //     return web -> web.ignoring()
-    //                      .requestMatchers("/**") // 모든 경로에 대해 인증을 허용합니다.
+    //                      .requestMatchers("/**") // 모든 경로에 대해 인증 허용
     //                      .permitAll();
     // }
 
@@ -66,10 +65,13 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(auth -> auth      // 인증, 비인증 경로 처리
+            .authorizeHttpRequests(auth -> auth      // 인증, 비인증 경로 처리      
                 .requestMatchers("/user/login/**").permitAll()    // permitAll 은 인증 처리하지 않는다는 뜻
-                .requestMatchers("/logout/**").permitAll()
+                .requestMatchers("/user/login/error").permitAll()
+                .requestMatchers("/user/logout/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/.well-known/**").permitAll()   // chrome dev-tool 에러 처리
+                .requestMatchers("/favicon.ico").permitAll()  // favicon 에러 처리
                 .requestMatchers(HttpMethod.GET, "/gal/**", "/api/v1/gal/**").permitAll()  // GET 방식인 /gal 은 모두 허용
                 .requestMatchers(HttpMethod.GET, "/board/**", "/api/v1/board/**").permitAll()   // GET 방식인 /board 는 모두 허용
                 .requestMatchers("/admin/**", "/api/v1/admin/**").hasAnyRole("ADMIN")   // ADMIN 권한을 가지고 있어야만 허용
@@ -80,18 +82,21 @@ public class SecurityConfig {
                 .successHandler(new LoginSuccessHandler())   // 성공할 경우
                 .failureHandler(new LoginFailureHanlder()))   // 실패할 경우
             .logout(logout -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher("/logout"))
+                //.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .invalidateHttpSession(true)   // 스프링 세션 제거
                 .deleteCookies("JSESSIONID")    // 세션 ID 제거
                 .clearAuthentication(true)   // 로그인 객체 삭제
                 .logoutSuccessHandler(new LogoutHandler()))   // 로그아웃 후 처리
             .exceptionHandling(exp -> exp
                 .defaultAuthenticationEntryPointFor(   // 인증받지 않은 API 요청에 대해서는 401 응답 (리다이렉트 하지 않음)
-                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),  
-                    new AntPathRequestMatcher("/api/**"))
+                    new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                    PathPatternRequestMatcher.withDefaults().matcher("/api/**"))
+                    //new AntPathRequestMatcher("/api/**"))
                 .defaultAccessDeniedHandlerFor(   // 인증은 받았으나 권한이 없는 API 요청에 대해서는 403 응답 (리다이렉트 하지 않음)
                     new HttpStatusAccessDeniedHandler(HttpStatus.FORBIDDEN), 
-                    new AntPathRequestMatcher("/api/**")));
+                    PathPatternRequestMatcher.withDefaults().matcher("/api/**")));
+                    //new AntPathRequestMatcher("/api/**")));
             
         return http.build();
     }

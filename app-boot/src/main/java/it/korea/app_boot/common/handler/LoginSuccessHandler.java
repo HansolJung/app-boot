@@ -50,7 +50,7 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         if (savedRequest != null) {
             String targetURI = savedRequest.getRedirectUrl();  // 이전 페이지 주소가 들어있다
             
-            if (targetURI.contains("error")) {   // 주소에 error 가 있는 경우는 기본 URL 로 대체
+            if (targetURI.contains("error") || targetURI.contains(".well-known")) {   // 주소에 error 가 있는 경우, 혹은 데브툴 페이지는 기본 URL 로 대체
                 targetURI = getDefaultTargetUrl();
             }
 
