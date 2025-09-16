@@ -26,12 +26,14 @@ import it.korea.app_boot.board.service.BoardJPAService;
 import it.korea.app_boot.board.service.BoardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
 // view 가 아닌 data 를 돌려주는 컨트롤러
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
+@Slf4j
 public class BoardApiController {
 
     private final BoardService service;
@@ -65,6 +67,7 @@ public class BoardApiController {
     public ResponseEntity<Map<String, Object>> getBoardData(BoardSearchDTO searchDTO) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         HttpStatus status = HttpStatus.OK;
+        log.info("========= 게시판 가져오기 =========");
 
         // order by 객체 리스트 만들기
         List<Sort.Order> sorts = new ArrayList<>();

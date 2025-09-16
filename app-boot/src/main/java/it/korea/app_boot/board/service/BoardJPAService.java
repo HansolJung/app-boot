@@ -168,7 +168,7 @@ public class BoardJPAService {
 
         BoardDTO.Detail detail = BoardDTO.Detail.of(entity);
         
-        // 2. 업로드 할 파일이 있으면 기존 파일을 삭제한 후 등록 
+        // 2. 업로드 할 파일이 있으면 업로드
         if (!request.getFile().isEmpty()) {
 
             // 2-1. 파일 업로드

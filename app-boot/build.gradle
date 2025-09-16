@@ -77,6 +77,12 @@ dependencies {
 	//이미지 리사이즈
     implementation 'com.jhlabs:filters:2.0.235-1'
     implementation 'com.mortennobel:java-image-scaling:0.8.6'
+
+	// SQL 로깅
+	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
+
+	// 스프링부트 시큐리티
+	implementation 'org.springframework.boot:spring-boot-starter-security:3.5.5'
 }
 
 tasks.named('test') {

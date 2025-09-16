@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+    <!--    <property name="LOG_LEVEL" value="${log.config.level}"/>-->
+
+    <!-- property 는 전역 변수라고 생각하면 된다 -->
+    <property name="LOG_PATTERN" value="%-5level %d{yy-MM-dd HH:mm:ss}[%thread] [%logger{0}:%line] - %msg%n"/>
+    <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %c{1}:%L - %X{dd.trace_id:-0} %X{dd.span_id:-0} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="LOGS_ABSOLUTE_PATH" value="./logs" />
+
+
+    <!-- appender 는 하나의 기능이라고 보면 된다 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoder 는 출력 포맷이라고 보면 된다 -->
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <prudent>false</prudent>
+        <file>${LOGS_ABSOLUTE_PATH}/appboot.log</file>
+        <encoder>
+            <pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+
+        <!-- 특정 기간(예: 하루)이 지나면 이전 로그 파일을 새 파일로 분리하고, 
+            지정된 규칙에 따라 로그 파일을 압축하거나 삭제하여 디스크 공간을 효율적으로 관리한다 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS_ABSOLUTE_PATH}/appboot.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${LOGS_ABSOLUTE_PATH}/appboot_error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/appboot_error-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}[%-5level] : %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ASYNC 가 붙은 appender 들은 전부 비동기 처리할 때 사용 -->
+    <appender name="ASYNC_STDOUT" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 해당 문서의 출력 대상은 파일이 아니라 그냥 콘솔에 출력 -->
+        <appender-ref ref="STDOUT" />
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <appender name="ASYNC_FILE_LOGGING" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE" />
+    </appender>
+
+    <appender name="ASYNC_FILE_ERROR_LOGGING" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ERROR" />
+    </appender>
+
+    <!-- p6spy 로거 추가 -->
+    <logger name="p6spy" level="INFO"/>
+
+</included>
