@@ -36,6 +36,9 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         
         // 로그인 성공 후 처리
         setDefaultTargetUrl("/board/list");
+        // 이동 경로가 있으면 우선 사용
+        setAlwaysUseDefaultTargetUrl(false);
+
         request.getSession().setMaxInactiveInterval(1800);
         
         SavedRequest savedRequest = requestCache.getRequest(request, response);
@@ -50,7 +53,8 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
         if (savedRequest != null) {
             String targetURI = savedRequest.getRedirectUrl();  // 이전 페이지 주소가 들어있다
             
-            if (targetURI.contains("error") || targetURI.contains(".well-known")) {   // 주소에 error 가 있는 경우, 혹은 데브툴 페이지는 기본 URL 로 대체
+            if (targetURI.contains("error") || targetURI.contains(".well-known") 
+                || targetURI.contains("login")) {   // 주소에 error, well-known(데브툴), login 이 있으면 기본 URL 로 대체
                 targetURI = getDefaultTargetUrl();
             }
 

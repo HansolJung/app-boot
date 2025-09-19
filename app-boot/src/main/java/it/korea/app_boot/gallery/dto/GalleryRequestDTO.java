@@ -16,4 +16,6 @@ public class GalleryRequestDTO {
     private String title;
     @NotNull(message = "파일은 필수 항목입니다.")
     private MultipartFile file;
+
+    private String writer;
 }

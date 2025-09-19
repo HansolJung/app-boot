@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/main_layout}"
+>
+
+<th:block layout:fragment="css">
+    <style>
+        .table th, .table td{
+            vertical-align: middle;
+        }
+
+        .table label{
+            margin-top: 4px;
+        }
+
+        input.form-control[readonly] {
+            background-color: #f8f8f8;
+        }
+    </style>
+</th:block>
+    <div layout:fragment="content">
+        <main class="container d-flex justify-content-center vh-100">
+            <section class="w-75 h-75">
+                <header class="text-center mt-5">
+                    <h2>회원 정보 등록</h2>
+                </header>
+                <section class="mt-5">
+                    <form id="frm">
+                        <table class="table">
+                            <tr>
+                                <th>
+                                    <label for="userId" class="form-label">아이디</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="userId" name="userId" class="form-control">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="passwd" class="form-label">패스워드</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="passwd" name="passwd" class="form-control">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="userName" class="form-label">이름</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="userName" name="userName" class="form-control">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="gender" class="form-label">성별</label>
+                                </th>
+                                <td>
+                                    <select name="gender" id="gender" class="form-select w-25">
+                                        <option value="" selected disabled>선택해주세요</option>
+                                        <option value="남자">남자</option>
+                                        <option value="여자">여자</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="birth" class="form-label">생년월일</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="birth" name="birth" class="form-control">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="phone" class="form-label">전화번호</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="phone" name="phone" class="form-control">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="mailId" class="form-label">이메일</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="mailId" name="mailId" class="form-control d-inline-block w-25">
+                                    <span>@</span>
+                                    <input type="text" id="agency" name="agency" class="form-control d-inline-block w-25" readonly>
+                                    <select class="form-select d-inline-block w-auto" onchange="changeMail(this)">
+                                        <option value="none">=== 선택 ===</option>
+                                        <option value="self">직접 선택</option>
+                                        <option value="gmail.com">gmail.com</option>
+                                        <option value="naver.com">naver.com</option>
+                                        <option value="kakao.com">kakao.com</option>
+                                        <option value="yahoo.co.kr">yahoo.co.kr</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label class="form-label">주소</label>
+                                </th>
+                                <td>
+                                    <input type="text" id="addr" name="addr" class="form-control d-inline-block w-75" readonly>
+                                    <button type="button" class="btn btn-warning ms-5 mb-2" onclick="searchAddr()">주소찾기</button>
+                                    <input type="text" id="addrDetail" name="addrDetail" class="form-control">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="userRole" class="form-label">권한</label>
+                                </th>
+                                <td>
+                                    <select name="userRole" id="userRole" class="form-select w-25">
+                                        <option value="USER" selected>사용자</option>
+                                        <option value="ADMIN">관리자</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label for="useYn" class="form-label">사용여부</label>
+                                </th>
+                                <td>
+                                    <select name="useYn" id="useYn" class="form-select w-25">
+                                        <option value="Y" selected>사용</option>
+                                        <option value="N">미사용</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </section>
+                <section class="text-center">
+                    <button type="button" class="btn btn-primary me-2" onclick="createUser();">등록</button>
+                    <button type="button" class="btn btn-secondary" onclick="goList();">취소</button>
+                </section>
+            </section>
+        </main>
+        <script>
+
+            const searchAddr = ()=>{
+                new daum.Postcode({
+                    onComplete: function(data) {
+                        let fullAddr = '';
+                        let extraAddr = '';
+
+                        if (data.userSelectedType === 'R') {
+                            fullAddr = data.roadAddress;
+                        } else {
+                            fullAddr = data.jibunAddress;
+                        }
+
+                        // 법정동 처리
+                        if(data.bname.trim().length > 0 || /[동|로|가]$/g.test(data.bname)) {
+                            extraAddr += data.bname;
+                        }
+
+                        // 아파트명 또는 빌딩명
+                        if (data.buildingName.trim().length > 0) {
+                            extraAddr += (extraAddr.length > 0 ? ', ' : '') + data.buildingName;
+                        }
+
+                        extraAddr = extraAddr.length > 0 ? `(${extraAddr})` : extraAddr;
+                        fullAddr += extraAddr;
+                        $('#addr').val(fullAddr);
+                    }
+                }).open();
+            }
+
+            const changeMail = (select)=>{
+                const agency = $(select).val();
+                $('#agency').prop('readOnly', true);
+
+                if (agency === 'none') {
+                    return;
+                }
+                
+                if (agency === 'self') {
+                    $('#agency').val('');
+                    $('#agency').prop('readOnly', false);
+                } else {
+                    $('#agency').val(agency);
+                }
+            }
+
+            function validated() {
+                
+                const eventMessage = {
+                    userId : '아이디를 입력하십시오.',
+                    passwd : '패스워드를 입력하십시오.',
+                    userName : '이름을 입력하십시오.',
+                    birth : '생년월일을 입력하십시오.',
+                    phone : '전화번호를 입력하십시오.',
+                    mailId : '메일 아이디를 입력하십시오.',
+                    agency : '메일 공급자를 선택하십시오.',
+                    addr : '주소를 입력하십시오.',
+                    userRole : '권한을 선택하십시오.',
+                    useYn : '사용여부를 선택하십시오.'
+                }
+
+                const inputAddr = $('input[type="text"]:not(#addrDetail), input[type="password"]');
+                let isConfirm = true;
+                let errorMessage = '';
+                $.each(inputAddr, (index, obj)=>{
+                    const id = obj.id;
+                    const value = obj.value.trim();
+
+                    if (value.length === 0 && eventMessage[id]) {
+                        isConfirm = false;
+                        errorMessage = eventMessage[id];
+                        return false;   // break 역할
+                    }
+                });
+
+                if ($('#gender').val() === null) {
+                    alert('성별을 선택하십시오.');
+                    return false;
+                }
+
+                if (!isConfirm) {
+                    alert(errorMessage);
+                    return false;
+                }
+
+                return true;
+            }
+
+            const createUser = ()=>{
+                if (validated()) {
+                    const dataParam = {
+                        userId : $('#userId').val(),
+                        passwd : $('#passwd').val(),
+                        userName : $('#userName').val(),
+                        phone : $('#phone').val(),
+                        email : $('#mailId').val() + '@' + $('#agency').val(),
+                        addr : $('#addr').val(),
+                        addrDetail : $('#addrDetail').val(),
+                        useYn : $('#useYn').val(),
+                        userRole : $('#userRole').val(),
+                        gender : $('#gender').val(),
+                        birth : $('#birth').val()
+                    }
+
+                    const header = {
+                        'Content-type': 'multipart/form-data'
+                    }
+                    
+                    axios.post('/api/v1/admin/user', dataParam, header)
+                        .then((resp) => {
+                            if (resp.data.resultCode === 200) {
+                                alert('회원이 등록되었습니다.');
+                                location.href = '/admin/list';
+                            } else {
+                                alert('회원 등록에 실패했습니다.');
+                            }
+                        }).catch((err) => {
+                            // axiosCommon.js 에서 응답을 가로채기 때문에 또 alert 창을 띄울 필요는 없음.
+                            //alert(err);
+                        });
+                }
+            }
+
+            const goList = ()=>{
+                location.href = '/admin/list';
+            }
+            
+        </script>
+    </div>
+</html>

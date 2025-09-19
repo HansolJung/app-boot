@@ -59,7 +59,6 @@ public class PageVO {
 	public String pageHTML() {
 		StringBuilder sb = new StringBuilder();
 		
-		
 		// 수치 계산
 		this.makePageData();
 		

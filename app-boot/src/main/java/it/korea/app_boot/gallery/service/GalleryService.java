@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import it.korea.app_boot.common.dto.PageVO;
 import it.korea.app_boot.common.files.FileUtils;
@@ -82,39 +83,18 @@ public class GalleryService {
     @Transactional
     public void addGallery(GalleryRequestDTO request) throws Exception {
 
-        String fileName = request.getFile().getOriginalFilename();
-        String ext = fileName.substring(fileName.lastIndexOf(".") + 1);
-
-        if (!extensions.contains(ext.toLowerCase())) {
-            throw new RuntimeException("파일 형식이 맞지 않습니다. 이미지 파일만 가능합니다.");
-        }
-
-        Map<String, Object> fileMap = fileUtils.uploadFiles(request.getFile(), filePath);
-
-        if (fileMap == null) {
-            throw new RuntimeException("파일 업로드 실패");
-        }
-
-        String thumbFilePath = filePath + "thumb" + File.separator;
-        String storedFilePath = filePath + fileMap.get("storedFileName").toString();
-
-        File file = new File(storedFilePath);
-
-        if (!file.exists()) {
-            throw new RuntimeException("업로드 파일이 존재하지 않음");
-        }
-
-        String thumbName = fileUtils.thumbNailFile(150, 150, file, thumbFilePath);
-        String newNums = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
-        
+        Map<String, Object> fileMap = uploadImageFiles(request.getFile());   // 파일 업로드 과정 공통화해서 분리
         GalleryEntity entity = new GalleryEntity();
+        String newNums = UUID.randomUUID().toString()
+            .replaceAll("-", "").substring(0, 10);  // 갤러리 랜덤 id 생성
+
         entity.setNums(newNums);
         entity.setTitle(request.getTitle());
-        entity.setWriter("admin");
+        entity.setWriter(request.getWriter());
         entity.setFileName(fileMap.get("fileName").toString());
         entity.setStoredName(fileMap.get("storedFileName").toString());
         entity.setFilePath(filePath);
-        entity.setFileThumbName(thumbName);
+        entity.setFileThumbName(fileMap.get("thumbName").toString());
 
         galleryRepository.save(entity);
     }
@@ -132,61 +112,25 @@ public class GalleryService {
             .orElseThrow(()-> new RuntimeException("갤러리 없음"));
 
         entity.setTitle(request.getTitle());
-        entity.setWriter("admin");
 
         GalleryDTO detail = GalleryDTO.of(entity);
 
         // 2. 업로드 할 파일이 있으면 업로드
         if (!request.getFile().isEmpty()) {
 
-            String fileName = request.getFile().getOriginalFilename();
-            String ext = fileName.substring(fileName.lastIndexOf(".") + 1);
-
-            if (!extensions.contains(ext.toLowerCase())) {
-                throw new RuntimeException("파일 형식이 맞지 않습니다. 이미지 파일만 가능합니다.");
-            }
-
-            Map<String, Object> fileMap = fileUtils.uploadFiles(request.getFile(), filePath);
-
-            if (fileMap == null) {
-                throw new RuntimeException("파일 업로드 실패");
-            }
-
-            String thumbFilePath = filePath + "thumb" + File.separator;
-            String storedFilePath = filePath + fileMap.get("storedFileName").toString();
-
-            File file = new File(storedFilePath);
-
-            if (!file.exists()) {
-                throw new RuntimeException("업로드 파일이 존재하지 않음");
-            }
-
-            String thumbName = fileUtils.thumbNailFile(150, 150, file, thumbFilePath);
+            Map<String, Object> fileMap = uploadImageFiles(request.getFile());   // 파일 업로드 과정 공통화해서 분리
         
             entity.setFileName(fileMap.get("fileName").toString());
             entity.setStoredName(fileMap.get("storedFileName").toString());
-            entity.setFileThumbName(thumbName);
+            entity.setFileThumbName(fileMap.get("thumbName").toString());
             entity.setFilePath(filePath);
         }
         
         galleryRepository.save(entity);
 
         if (!request.getFile().isEmpty()) {
-            // 2-3. 기존 파일 삭제 (작업 도중 DB에 문제가 생길 수도 있기 때문에 물리적 파일 삭제는 제일 마지막에 진행)
-            
-            // 파일 정보
-            String fullPath = detail.getFilePath() + detail.getStoredName();
-            String thumbFilePath = filePath + "thumb" + File.separator + detail.getFileThumbName();
-
-            File file = new File(fullPath);
-
-            if (!file.exists()) {
-                throw new NotFoundException("파일이 경로에 없음");
-            }
-
-            // 실제 파일 삭제
-            fileUtils.deleteFile(fullPath);
-            fileUtils.deleteFile(thumbFilePath);  // 썸네일 파일까지 삭제
+            // 2-3. 기존 파일 삭제 (작업 도중 DB에 문제가 생길 수도 있기 때문에 물리적 파일 삭제는 제일 마지막에 진행) 
+            deleteImageFiles(detail);
         }
     }
 
@@ -206,20 +150,64 @@ public class GalleryService {
         if (details != null && details.size() > 0) {
             // 실제 파일 삭제는 제일 마지막에 진행
             for (GalleryDTO detail : details) {
-                // 파일 정보
-                String fullPath = detail.getFilePath() + detail.getStoredName();
-                String thumbFilePath = filePath + "thumb" + File.separator + detail.getFileThumbName();
-
-                File file = new File(fullPath);
-
-                if (!file.exists()) {
-                    throw new NotFoundException("파일이 경로에 없음");
-                }
-
-                // 실제 파일 삭제
-                fileUtils.deleteFile(fullPath);
-                fileUtils.deleteFile(thumbFilePath);  // 썸네일 파일까지 삭제
+                deleteImageFiles(detail);
             }
         } 
+    }
+
+    /**
+     * 파일 업로드 과정 공통화해서 분리
+     * @param file request 에서 넘어온 파일
+     * @return
+     * @throws Exception
+     */
+    private Map<String, Object> uploadImageFiles(MultipartFile file) throws Exception {
+        String fileName = file.getOriginalFilename();
+        String ext = fileName.substring(fileName.lastIndexOf(".") + 1);
+
+        if (!extensions.contains(ext.toLowerCase())) {
+            throw new RuntimeException("파일 형식이 맞지 않습니다. 이미지 파일만 가능합니다.");
+        }
+
+        Map<String, Object> fileMap = fileUtils.uploadFiles(file, filePath);
+
+        if (fileMap == null) {
+            throw new RuntimeException("파일 업로드 실패");
+        }
+
+        String thumbFilePath = filePath + "thumb" + File.separator;
+        String storedFilePath = filePath + fileMap.get("storedFileName").toString();
+
+        File thumbFile = new File(storedFilePath);
+
+        if (!thumbFile.exists()) {
+            throw new RuntimeException("업로드 파일이 존재하지 않음");
+        }
+
+        String thumbName = fileUtils.thumbNailFile(150, 150, thumbFile, thumbFilePath);
+        fileMap.put("thumbName", thumbName);
+
+        return fileMap;
+    }
+
+    /**
+     * 파일 삭제과정 공통화해서 분리
+     * @param detail 갤러리 상세 정보 DTO
+     * @throws Exception
+     */
+    private void deleteImageFiles(GalleryDTO detail) throws Exception {
+        // 파일 정보
+        String fullPath = detail.getFilePath() + detail.getStoredName();
+        String thumbFilePath = filePath + "thumb" + File.separator + detail.getFileThumbName();
+
+        File file = new File(fullPath);
+
+        if (!file.exists()) {
+            throw new NotFoundException("파일이 경로에 없음");
+        }
+
+        // 실제 파일 삭제
+        fileUtils.deleteFile(fullPath);
+        fileUtils.deleteFile(thumbFilePath);  // 썸네일 파일까지 삭제
     }
 }

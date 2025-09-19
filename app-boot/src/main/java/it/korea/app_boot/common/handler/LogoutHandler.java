@@ -37,6 +37,6 @@ public class LogoutHandler implements LogoutSuccessHandler {
         }
 
         response.setStatus(HttpServletResponse.SC_OK);
-        response.sendRedirect("/login/form");
+        response.sendRedirect("/board/list");
     }
 }

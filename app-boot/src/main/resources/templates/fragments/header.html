@@ -25,8 +25,24 @@
             <li class="nav-item">
               <a class="nav-link" href="/gal">이미지 갤러리</a>
             </li>
+            <li sec:authorize="${hasRole('ROLE_ADMIN')}">
+              <a class="nav-link" href="/admin/list">회원 게시판</a>
+            </li>
           </ul>
-          <span class="navbar-text">로그인</span>
+          <span class="navbar-text" sec:authorize="isAnonymous()">
+            <a class="nav-link" href="/login">로그인</a>
+          </span>
+          <ul class="navbar-nav" sec:authorize="isAuthenticated()">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span th:text="${#authentication.name}"></span>님 안녕하세요
+              </a>
+              <ul class="dropdown-menu" style="width: 120px;">
+                <li><a class="dropdown-item" href="#">사용자 정보</a></li>
+                <li><a class="dropdown-item" href="/logout">로그아웃</a></li>
+              </ul>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>

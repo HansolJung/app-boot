@@ -50,7 +50,6 @@ dependencies {
 	implementation 'org.apache.commons:commons-lang3:3.18.0'
     implementation (
 			[group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'],
-			[group: 'org.apache.taglibs', name: 'taglibs-standard-impl', version: '1.2.5'],
 			[group: 'commons-io', name: 'commons-io', version: '2.20.0']
     )
 
@@ -83,6 +82,7 @@ dependencies {
 
 	// 스프링부트 시큐리티
 	implementation 'org.springframework.boot:spring-boot-starter-security:3.5.5'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.3.RELEASE'
 }
 
 tasks.named('test') {

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import it.korea.app_boot.gallery.dto.GalleryDeleteDTO;
 import it.korea.app_boot.gallery.dto.GalleryRequestDTO;
 import it.korea.app_boot.gallery.service.GalleryService;
+import it.korea.app_boot.user.dto.UserSecureDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -66,12 +68,13 @@ public class GalleryApiController {
      * @throws Exception
      */
     @PostMapping("/gal")
-    public ResponseEntity<Map<String, Object>> writeGallery(@Valid @ModelAttribute GalleryRequestDTO request) throws Exception {
+    public ResponseEntity<Map<String, Object>> writeGallery(@Valid @ModelAttribute GalleryRequestDTO request,
+            @AuthenticationPrincipal UserSecureDTO user) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         HttpStatus status = HttpStatus.OK;
 
         try {
-
+            request.setWriter(user.getUserId());
             galleryService.addGallery(request);
             resultMap.put("resultCode", 200);
             resultMap.put("resultMsg", "OK");

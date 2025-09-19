@@ -21,7 +21,7 @@ public class UserEntity extends BaseEntity {
     private String userId;
     private String passwd;
     private String userName;
-    private int birth;
+    private String birth;
     private String gender;
     private String phone;
     private String email;
@@ -33,7 +33,7 @@ public class UserEntity extends BaseEntity {
     @Column(columnDefinition = "CHAR(1)")
     private String delYn;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_role")
     private UserRoleEntity role;
 }
