@@ -24,9 +24,16 @@ public class UserController {
     @GetMapping("/login/error")
     public ModelAndView loginErrorView(@RequestParam("msg") String msg) {
         ModelAndView view = new ModelAndView();
-        System.out.println(msg);
         view.addObject("msg", msg);
         view.setViewName("views/user/loginError");
+
+        return view;
+    }
+
+    @GetMapping("/register/form")
+    public ModelAndView getRegisterView() {
+        ModelAndView view = new ModelAndView();
+        view.setViewName("views/user/registerForm");
 
         return view;
     }

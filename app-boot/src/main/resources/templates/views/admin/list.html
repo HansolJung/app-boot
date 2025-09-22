@@ -26,6 +26,13 @@
                     <li class="mx-3">
                         <input type="text" class="form-control d-inline-block" id="searchText" placeholder="아이디 또는 이름">
                     </li>
+                    <li class="mx-3">
+                        <select class="form-select" id="delYn" name="delYn">
+                            <option value="ALL" selected>전체보기</option>
+                            <option value="N">회원보기</option>
+                            <option value="Y">삭제된 회원보기</option>
+                        </select>
+                    </li>
                     <li>
                         <button type="button" class="btn btn-warning" onclick="search()">검색</button>
                     </li>
@@ -106,6 +113,7 @@
             return {
                 //searchType: $('#searchType').val(),
                 searchText: $('#searchText').val(),
+                delYn : $('#delYn').val(),
                 page: $('#page').val(),
                 size: $('#size').val(),
             }
@@ -129,11 +137,11 @@
                 
                 const tr = $('<tr></tr>');
 
-                if (obj.delYn === 'Y') {
-                    tr.css({"background-color":"gray","pointer-events":"none"});
+                if (obj.delYn === 'Y') {   // 삭제여부가 Y일경우... 
+                    tr.css({"background-color":"gray","pointer-events":"none"});  // 배경 색깔 변경하고 클릭 막기
                 }
                 let contents = '';
-                for (let key of columns) {     // key - value 로 이뤄진 객체에서 in 절을 쓰면 key 를 가져온다
+                for (let key of columns) {     // key - value 로 이뤄진 객체에서 in 절을 쓰면 key 를 가져온다. 배열에서 of 절을 쓰면 그냥 값을 가져온다.
                     contents = '';
                     const td = $('<td></td>');
 

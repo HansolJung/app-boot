@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.ModelAndView;
 
 import it.korea.app_boot.board.service.BoardJPAService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 @Controller
@@ -40,10 +42,12 @@ public class BoardController {
      * @throws Exception
      */
     @GetMapping("/{brdId}")
-    public ModelAndView detailView(@PathVariable(name = "brdId") int brdId) throws Exception {
+    public ModelAndView detailView(@PathVariable(name = "brdId") int brdId,
+            HttpServletRequest request, HttpServletResponse response) throws Exception {
         ModelAndView view = new ModelAndView();
         Map<String, Object> resultMap = new HashMap<>();
-        
+
+        service.increaseView(brdId, request, response);   // 조회수 증가
         resultMap = service.getBoard(brdId);
         view.addObject("vo", resultMap.get("vo"));
 

@@ -4,21 +4,26 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import it.korea.app_boot.admin.dto.AdminUserProjection;
 import it.korea.app_boot.user.entity.UserEntity;
 
-public interface UserRepository extends JpaRepository<UserEntity, String> {
+public interface UserRepository extends JpaRepository<UserEntity, String>, JpaSpecificationExecutor<UserEntity> {
 
     @EntityGraph(attributePaths = {"role"})   // 전체 유저 리스트 가져올 때 N+1 현상 해결
     Page<UserEntity> findAll(Pageable pageable);
 
-    Page<UserEntity> findByUserIdContainingOrUserNameContaining(String searchText1, 
-        String searchText2, Pageable pageable);    // 통합 검색할 때 사용
+    @EntityGraph(attributePaths = {"role"})   // 전체 유저 리스트 가져올 때 N+1 현상 해결
+    Page<UserEntity> findAll(Specification<UserEntity> searchSpecification, Pageable pageable);
+
+    // Page<UserEntity> findByUserIdContainingOrUserNameContaining(String searchText1, 
+    //     String searchText2, Pageable pageable);    // 통합 검색할 때 사용
 
     @Query(value = """
             select u.user_id,

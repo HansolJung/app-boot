@@ -21,6 +21,7 @@ import it.korea.app_boot.user.entity.UserEntity;
 import it.korea.app_boot.user.entity.UserRoleEntity;
 import it.korea.app_boot.user.repository.UserRepository;
 import it.korea.app_boot.user.repository.UserRoleRepository;
+import it.korea.app_boot.user.repository.UserSearchSpecification;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -68,11 +69,14 @@ public class AdminUserService {
 
         Page<UserEntity> pageList = null;
 
-        if (StringUtils.isNotBlank(searchDTO.getSearchText())) {
-            pageList = userRepository.findByUserIdContainingOrUserNameContaining(searchDTO.getSearchText(), searchDTO.getSearchText(), pageable);
-        } else {
-            pageList = userRepository.findAll(pageable);
-        }
+        // if (StringUtils.isNotBlank(searchDTO.getSearchText())) {
+        //     pageList = userRepository.findByUserIdContainingOrUserNameContaining(searchDTO.getSearchText(), searchDTO.getSearchText(), pageable);
+        // } else {
+        //     pageList = userRepository.findAll(pageable);
+        // }
+
+        UserSearchSpecification searchSpecification = new UserSearchSpecification(searchDTO);
+        pageList = userRepository.findAll(searchSpecification, pageable);
 
         List<AdminUserDTO> userList = pageList.getContent().stream().map(AdminUserDTO::of).toList();
 
@@ -127,7 +131,7 @@ public class AdminUserService {
             userEntity.setUseYn(userRequestDTO.getUseYn());
             userEntity.setDelYn("N");
             userEntity.setRole(userRoleEntity);
-
+            
             userRepository.save(userEntity);
         } else {
             throw new RuntimeException("해당 아이디를 가진 회원이 이미 존재");
@@ -176,6 +180,7 @@ public class AdminUserService {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(()-> new RuntimeException("사용자 없음"));
 
+        userEntity.setUseYn("N");  // 사용 여부 N로 변경
         userEntity.setDelYn("Y");  // 삭제 여부 Y로 변경
 
         userRepository.save(userEntity);

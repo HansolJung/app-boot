@@ -42,7 +42,7 @@ function errorHandler(error) {
             alert('귄한이 없습니다.');
             break;
         case 500:
-            if (data.message !== null || data.message !== undefined || data.message.length > 0) {
+            if (data.message !== null && data.message !== undefined && data.message.length > 0) {
                 alert(data.message);
             } else {
                 alert('서버 내부에 오류가 발생했습니다.');

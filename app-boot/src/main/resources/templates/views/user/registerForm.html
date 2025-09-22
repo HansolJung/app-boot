@@ -22,20 +22,20 @@
     </style>
 </th:block>
     <div layout:fragment="content">
-        <main class="container d-flex justify-content-center vh-100">
+        <main class="container d-flex justify-content-center">
             <section class="w-75 h-75">
                 <header class="text-center mt-5">
-                    <h2>회원 정보 보기</h2>
+                    <h2>회원가입</h2>
                 </header>
                 <section class="mt-5">
-                    <form id="frm">
+                    <form id="frm" autocomplete="off">
                         <table class="table">
                             <tr>
                                 <th>
-                                    <label class="form-label">아이디</label>
+                                    <label for="userId" class="form-label">아이디</label>
                                 </th>
                                 <td>
-                                    <span th:text="${vo.userId}" id="userId"></span>
+                                    <input type="text" id="userId" name="userId" class="form-control">
                                 </td>
                             </tr>
                             <tr>
@@ -43,7 +43,7 @@
                                     <label for="passwd" class="form-label">패스워드</label>
                                 </th>
                                 <td>
-                                    <input type="password" id="passwd" name="passwd" class="form-control">
+                                    <input type="text" id="passwd" name="passwd" class="form-control">
                                 </td>
                             </tr>
                             <tr>
@@ -51,23 +51,27 @@
                                     <label for="userName" class="form-label">이름</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="userName" name="userName" class="form-control" th:value="${vo.userName}">
+                                    <input type="text" id="userName" name="userName" class="form-control">
                                 </td>
                             </tr>
                             <tr>
                                 <th>
-                                    <label class="form-label">성별</label>
+                                    <label for="gender" class="form-label">성별</label>
                                 </th>
                                 <td>
-                                    <span th:text="${vo.gender}"></span>
+                                    <select name="gender" id="gender" class="form-select w-25">
+                                        <option value="" selected disabled>선택해주세요</option>
+                                        <option value="남자">남자</option>
+                                        <option value="여자">여자</option>
+                                    </select>
                                 </td>
                             </tr>
                             <tr>
                                 <th>
-                                    <label class="form-label">생년월일</label>
+                                    <label for="birth" class="form-label">생년월일</label>
                                 </th>
                                 <td>
-                                    <span th:text="${vo.birth}"></span>
+                                    <input type="text" id="birth" name="birth" class="form-control">
                                 </td>
                             </tr>
                             <tr>
@@ -75,30 +79,24 @@
                                     <label for="phone" class="form-label">전화번호</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="phone" name="phone" class="form-control" th:value="${vo.phone}">
+                                    <input type="text" id="phone" name="phone" class="form-control">
                                 </td>
                             </tr>
                             <tr>
                                 <th>
                                     <label for="mailId" class="form-label">이메일</label>
                                 </th>
-                                <td th:with="agencyName=${#strings.substring(vo.email, #strings.indexOf(vo.email, '@') + 1)}">
-                                    <input type="text" id="mailId" name="mailId" class="form-control d-inline-block w-25" 
-                                        th:value="${#strings.substring(vo.email, 0, #strings.indexOf(vo.email, '@'))}">
+                                <td>
+                                    <input type="text" id="mailId" name="mailId" class="form-control d-inline-block w-25">
                                     <span>@</span>
-                                    <input type="text" id="agency" name="agency" class="form-control d-inline-block w-25" 
-                                        th:value="${agencyName}" readonly>
+                                    <input type="text" id="agency" name="agency" class="form-control d-inline-block w-25" readonly>
                                     <select class="form-select d-inline-block w-auto" onchange="changeMail(this)">
                                         <option value="none">=== 선택 ===</option>
                                         <option value="self">직접 선택</option>
-                                        <option th:selected="${agencyName == 'gmail.com'}" 
-                                            value="gmail.com">gmail.com</option>
-                                        <option th:selected="${agencyName == 'naver.com'}" 
-                                            value="naver.com">naver.com</option>
-                                        <option th:selected="${agencyName == 'kakao.com'}" 
-                                            value="kakao.com">kakao.com</option>
-                                        <option th:selected="${agencyName == 'yahoo.co.kr'}" 
-                                            value="yahoo.co.kr">yahoo.co.kr</option>
+                                        <option value="gmail.com">gmail.com</option>
+                                        <option value="naver.com">naver.com</option>
+                                        <option value="kakao.com">kakao.com</option>
+                                        <option value="yahoo.co.kr">yahoo.co.kr</option>
                                     </select>
                                 </td>
                             </tr>
@@ -107,42 +105,17 @@
                                     <label class="form-label">주소</label>
                                 </th>
                                 <td>
-                                    <input type="text" id="addr" name="addr" class="form-control d-inline-block w-75" 
-                                        th:value="${vo.addr}" readonly>
+                                    <input type="text" id="addr" name="addr" class="form-control d-inline-block w-75" readonly>
                                     <button type="button" class="btn btn-warning ms-5 mb-2" onclick="searchAddr()">주소찾기</button>
-                                    <input type="text" id="addrDetail" name="addrDetail" class="form-control" 
-                                        th:value="${vo.addrDetail}">
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label class="form-label">권한</label>
-                                </th>
-                                <td>
-                                    <select class="form-select w-25" id="userRole" name="userRole">
-                                        <option th:selected="${vo.userRole == 'ADMIN'}" value="ADMIN">관리자</option>
-                                        <option th:selected="${vo.userRole == 'USER'}" value="USER">사용자</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <label class="form-label">사용여부</label>
-                                </th>
-                                <td>
-                                    <select class="form-select w-25" id="useYn" name="useYn">
-                                        <option th:selected="${vo.useYn == 'Y'}" value="Y">사용</option>
-                                        <option th:selected="${vo.useYn == 'N'}" value="N">미사용</option>
-                                    </select>
+                                    <input type="text" id="addrDetail" name="addrDetail" class="form-control">
                                 </td>
                             </tr>
                         </table>
                     </form>
-                    <div class="text-center mt-3">
-                        <button type="button" class="btn btn-primary me-2" onclick="updateUser()">수정</button>
-                        <button type="button" class="btn btn-danger me-2" onclick="deleteUser()">삭제</button>
-                        <button type="button" class="btn btn-secondary" onclick="goList()">목록</button>
-                    </div>
+                </section>
+                <section class="text-center">
+                    <button type="button" class="btn btn-primary me-2" onclick="register();">회원가입</button>
+                    <button type="button" class="btn btn-secondary" onclick="goList();">취소</button>
                 </section>
             </section>
         </main>
@@ -196,12 +169,14 @@
             function validated() {
                 
                 const eventMessage = {
+                    userId : '아이디를 입력하십시오.',
+                    passwd : '패스워드를 입력하십시오.',
                     userName : '이름을 입력하십시오.',
+                    birth : '생년월일을 입력하십시오.',
                     phone : '전화번호를 입력하십시오.',
                     mailId : '메일 아이디를 입력하십시오.',
                     agency : '메일 공급자를 선택하십시오.',
-                    addr : '주소를 입력하십시오.',
-                    userRole : '권한을 선택하십시오.'
+                    addr : '주소를 입력하십시오.'
                 }
 
                 const inputAddr = $('input[type="text"]:not(#addrDetail), input[type="password"]');
@@ -218,6 +193,11 @@
                     }
                 });
 
+                if ($('#gender').val() === null) {
+                    alert('성별을 선택하십시오.');
+                    return false;
+                }
+
                 if (!isConfirm) {
                     alert(errorMessage);
                     return false;
@@ -226,22 +206,18 @@
                 return true;
             }
 
-            const updateUser = ()=>{
+            const register = async ()=>{
                 if (validated()) {
                     const dataParam = {
-                        userId : $('#userId').text(),
+                        userId : $('#userId').val(),
+                        passwd : $('#passwd').val(),
                         userName : $('#userName').val(),
                         phone : $('#phone').val(),
                         email : $('#mailId').val() + '@' + $('#agency').val(),
                         addr : $('#addr').val(),
                         addrDetail : $('#addrDetail').val(),
-                        useYn : $('#useYn').val(),
-                        userRole : $('#userRole').val()
-                    }
-                    
-                    const passwd = $('#passwd').val();
-                    if (passwd.trim().length > 0) {
-                        dataParam['passwd'] = passwd.trim();
+                        gender : $('#gender').val(),
+                        birth : $('#birth').val()
                     }
 
                     const headers = {
@@ -250,13 +226,13 @@
                         }
                     }
                     
-                    axios.put('/api/v1/admin/user', JSON.stringify(dataParam), headers)
+                    await axios.post('/api/v1/user/register', JSON.stringify(dataParam), headers)
                         .then((resp) => {
                             if (resp.data.resultCode === 200) {
-                                alert('회원 정보가 수정되었습니다.');
-                                location.href = '/admin/list';
+                                alert('회원가입에 성공했습니다.');
+                                location.href = '/board/list';
                             } else {
-                                alert('회원 정보 수정에 실패했습니다.');
+                                alert('회원가입에 실패했습니다.');
                             }
                         }).catch((err) => {
                             // axiosCommon.js 에서 응답을 가로채기 때문에 또 alert 창을 띄울 필요는 없음.
@@ -265,31 +241,10 @@
                 }
             }
 
-            const deleteUser = ()=>{
-                const userId = $('#userId').text();
-
-                if (!confirm('해당 회원을 정말 삭제 처리 하시겠습니까?')) {
-                    return false;
-                }
-
-                axios.delete(`/api/v1/admin/user/${userId}`)
-                    .then((resp) => {
-                        if (resp.data.resultCode === 200) {
-                            alert('회원이 삭제처리되었습니다.');
-                            location.href = '/admin/list';
-                        } else {
-                            alert('회원 삭제처리에 실패했습니다.');
-                        }
-                    }).catch((err) => {
-                        // axiosCommon.js 에서 응답을 가로채기 때문에 또 alert 창을 띄울 필요는 없음.
-                        //alert(err);
-                    });
-            }
-
             const goList = ()=>{
-                location.href = '/admin/list';
+                location.href = '/board/list';
             }
-
+            
         </script>
     </div>
 </html>

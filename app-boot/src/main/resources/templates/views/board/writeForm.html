@@ -120,6 +120,8 @@
                     const header = {
                         'Content-type': 'multipart/form-data'
                     }
+
+                    console.log(formData);
                     
                     axios.post('/api/v1/board', formData, header)
                         .then((resp) => {
@@ -130,7 +132,8 @@
                                 alert('게시글 등록에 실패했습니다.');
                             }
                         }).catch((err) => {
-                            alert(err);
+                            // axiosCommon.js 에서 응답을 가로채기 때문에 또 alert 창을 띄울 필요는 없음.
+                            //alert(err);
                         });
                 }
             }

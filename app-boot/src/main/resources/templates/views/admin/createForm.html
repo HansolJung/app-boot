@@ -22,13 +22,13 @@
     </style>
 </th:block>
     <div layout:fragment="content">
-        <main class="container d-flex justify-content-center vh-100">
+        <main class="container d-flex justify-content-center">
             <section class="w-75 h-75">
                 <header class="text-center mt-5">
                     <h2>회원 정보 등록</h2>
                 </header>
                 <section class="mt-5">
-                    <form id="frm">
+                    <form id="frm" autocomplete="off">
                         <table class="table">
                             <tr>
                                 <th>
@@ -230,7 +230,7 @@
                 return true;
             }
 
-            const createUser = ()=>{
+            const createUser = async ()=>{
                 if (validated()) {
                     const dataParam = {
                         userId : $('#userId').val(),
@@ -246,11 +246,13 @@
                         birth : $('#birth').val()
                     }
 
-                    const header = {
-                        'Content-type': 'multipart/form-data'
+                    const headers = {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
                     }
                     
-                    axios.post('/api/v1/admin/user', dataParam, header)
+                    await axios.post('/api/v1/admin/user', JSON.stringify(dataParam), headers)
                         .then((resp) => {
                             if (resp.data.resultCode === 200) {
                                 alert('회원이 등록되었습니다.');

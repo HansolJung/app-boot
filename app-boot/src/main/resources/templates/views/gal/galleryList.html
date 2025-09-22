@@ -324,7 +324,7 @@
                 return false;
             }
 
-            const isConfirm = confirm('정말 해당 이미지들을 삭제하시겠습니까?');
+            const isConfirm = confirm('해당 이미지들을 정말 삭제하시겠습니까?');
             if (!isConfirm) {
                 return false;
             }
@@ -357,7 +357,8 @@
                 }).then((res) => {
                     drawGalleryPage(res.data);
                 }).catch((err) => {
-                    alert(err);
+                    // axiosCommon.js 에서 응답을 가로채기 때문에 또 alert 창을 띄울 필요는 없음.
+                    //alert(err);
                 });
         }
 

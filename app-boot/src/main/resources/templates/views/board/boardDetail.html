@@ -104,9 +104,14 @@
                             alert('게시글 삭제에 실패했습니다.');
                         }
                     }).catch((err) => {
-                        alert(err);
+                        // axiosCommon.js 에서 응답을 가로채기 때문에 또 alert 창을 띄울 필요는 없음.
+                        //alert(err);
                     });
             }
+        }
+
+        const updateLike = ()=>{
+            // do something
         }
 
     </script>

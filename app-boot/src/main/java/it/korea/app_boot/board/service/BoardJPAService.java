@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.javassist.NotFoundException;
+import org.aspectj.weaver.patterns.TypePatternQuestions.Question;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -33,6 +34,9 @@ import it.korea.app_boot.board.repository.BoardFileRepository;
 import it.korea.app_boot.board.repository.BoardRepository;
 import it.korea.app_boot.board.repository.BoardSearchSpecification;
 import it.korea.app_boot.common.files.FileUtils;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -355,5 +359,56 @@ public class BoardJPAService {
         resultMap.put("resultMsg", "OK");
 
         return resultMap;
+    }
+
+    /**
+     * 조회수 증가
+     * @param id 게시글 아이디
+     * @param request
+     * @param response
+     */
+    public void increaseView(int brdId, HttpServletRequest request, HttpServletResponse response) {
+
+        Cookie[] cookies = request.getCookies();
+        Cookie oldCookie = null;
+        
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("board")) {
+                    oldCookie = cookie;
+                }
+            }
+        }
+
+        if (oldCookie != null) {
+            if (!oldCookie.getValue().contains("[" + brdId + "]")) {
+                increaseView(brdId);
+                oldCookie.setValue(oldCookie.getValue() + "_[" + brdId + "]");
+                oldCookie.setPath("/");
+                oldCookie.setMaxAge(60);
+                response.addCookie(oldCookie);
+            }
+        } else {
+            increaseView(brdId);
+            Cookie newCookie = new Cookie("board","[" + brdId + "]");
+            newCookie.setPath("/");
+            newCookie.setMaxAge(60);
+            response.addCookie(newCookie);
+        }
+    }
+
+    /**
+     * 조회수 증가
+     * @param brdId 게시글 아이디
+     */
+    @Transactional
+    public void increaseView(int brdId) {
+
+        BoardEntity entity = boardRepository.findById(brdId)
+            .orElseThrow(()-> new RuntimeException("게시글 없음"));
+
+        entity.setReadCount(entity.getReadCount() + 1);
+
+        boardRepository.save(entity);
     }
 }

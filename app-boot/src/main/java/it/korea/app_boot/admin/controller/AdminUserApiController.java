@@ -54,8 +54,9 @@ public class AdminUserApiController {
      * @return
      * @throws Exception
      */
-    @PostMapping("/admin/user")
-    public ResponseEntity<Map<String, Object>> createUser(@Valid @RequestBody AdminUserRequestDTO userRequestDTO) throws Exception {
+    @PostMapping(value = "/admin/user")  
+    public ResponseEntity<Map<String, Object>> createUser(@Valid @RequestBody // JSON 타입으로 받기 때문에 @RequestBody 사용
+            AdminUserRequestDTO userRequestDTO) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         HttpStatus status = HttpStatus.OK;
 
@@ -78,8 +79,9 @@ public class AdminUserApiController {
      * @return
      * @throws Exception
      */
-    @PutMapping("/admin/user")
-    public ResponseEntity<Map<String, Object>> updateUser(@Valid @RequestBody AdminUserUpdateRequestDTO userRequestDTO) throws Exception {
+    @PutMapping(value = "/admin/user")
+    public ResponseEntity<Map<String, Object>> updateUser(@Valid @RequestBody // JSON 타입으로 받기 때문에 @RequestBody 사용
+            AdminUserUpdateRequestDTO userRequestDTO) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         HttpStatus status = HttpStatus.OK;
 

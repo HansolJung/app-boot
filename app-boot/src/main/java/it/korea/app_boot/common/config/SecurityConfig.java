@@ -71,6 +71,8 @@ public class SecurityConfig {
                 .requestMatchers("/user/login/**").permitAll()    // permitAll 은 인증 처리하지 않는다는 뜻
                 .requestMatchers("/user/login/error").permitAll()
                 .requestMatchers("/user/logout/**").permitAll()
+                .requestMatchers("/user/register/**").permitAll()
+                .requestMatchers("/api/v1/user/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/.well-known/**").permitAll()   // chrome dev-tool 에러 처리
                 .requestMatchers("/favicon.ico").permitAll()  // favicon 에러 처리

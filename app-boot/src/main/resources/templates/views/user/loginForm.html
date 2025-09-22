@@ -54,7 +54,7 @@
       <!-- 버튼은 form 바깥 쪽에 만든다. submit 버튼이 되지 않도록 하기 위해서 -->
       <div class="mt-5 text-center">
         <button type="button" class="btn btn-primary me-2" onclick="goLogin();">로그인</button>
-        <button type="button" class="btn btn-success">회원가입</button>
+        <button type="button" class="btn btn-success" onclick="goRegister();">회원가입</button>
       </div>
     </section>
   </main>
@@ -83,6 +83,10 @@
       if (validated()) {
         $('#loginFrm').submit();
       }
+    }
+
+    function goRegister() {
+      location.href = '/user/register/form';
     }
   </script>
 </body>
