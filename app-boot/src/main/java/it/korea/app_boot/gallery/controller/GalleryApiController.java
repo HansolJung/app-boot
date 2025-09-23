@@ -40,9 +40,14 @@ public class GalleryApiController {
      */
     @GetMapping("/gal")
     public ResponseEntity<Map<String, Object>> getGalleryList(
-            @PageableDefault(page = 0, size = 10, sort = "createDate", direction = Sort.Direction.DESC) Pageable pageable) throws Exception {
+            @PageableDefault(page = 0, size = 10, sort = "createDate", direction = Sort.Direction.DESC) Pageable pageable,
+            @AuthenticationPrincipal UserSecureDTO user) throws Exception {
         
         Map<String, Object> resultMap = galleryService.getGalleryList(pageable);
+        
+        if (user != null) {
+            resultMap.put("userId", user.getUserId());
+        }
 
         return new ResponseEntity<>(resultMap, HttpStatus.OK);
     }
@@ -93,12 +98,17 @@ public class GalleryApiController {
      * @throws Exception
      */
     @PutMapping("/gal")
-    public ResponseEntity<Map<String, Object>> updateGallery(@Valid @ModelAttribute GalleryRequestDTO request) throws Exception {
+    public ResponseEntity<Map<String, Object>> updateGallery(@Valid @ModelAttribute GalleryRequestDTO request,
+            @AuthenticationPrincipal UserSecureDTO user) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         HttpStatus status = HttpStatus.OK;
 
         try {
             
+            request.setWriter(user.getUserId());
+            request.setAdmin(user.getAuthorities().stream().anyMatch(auth -> 
+                auth.getAuthority().equals("ROLE_ADMIN")));    // ADMIN 권한 여부 가져와서 request 에 넣기
+
             galleryService.updateGallery(request);
             resultMap.put("resultCode", 200);
             resultMap.put("resultMsg", "OK");
@@ -117,12 +127,16 @@ public class GalleryApiController {
      * @throws Exception
      */
     @PostMapping("/gal/delete")   // RESTful 원칙에 위배되는 메소드 설정과 URL 형식이지만 삭제할 갤러리 ID 리스트를 전달받기 위해서 어쩔수없이 사용
-    public ResponseEntity<Map<String, Object>> deleteGallery(@RequestBody GalleryDeleteDTO deleteDTO) throws Exception {
+    public ResponseEntity<Map<String, Object>> deleteGallery(@RequestBody GalleryDeleteDTO deleteDTO,
+            @AuthenticationPrincipal UserSecureDTO user) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         HttpStatus status = HttpStatus.OK;
 
         try {
-
+            deleteDTO.setWriter(user.getUserId());
+            deleteDTO.setAdmin(user.getAuthorities().stream().anyMatch(auth -> 
+                auth.getAuthority().equals("ROLE_ADMIN")));    // ADMIN 권한 여부 가져와서 dto 에 넣기
+            
             galleryService.deleteGallery(deleteDTO);
             resultMap.put("resultCode", 200);
             resultMap.put("resultMsg", "OK");

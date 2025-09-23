@@ -18,4 +18,6 @@ public class GalleryRequestDTO {
     private MultipartFile file;
 
     private String writer;
+    
+    private boolean isAdmin;
 }

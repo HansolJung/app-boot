@@ -120,8 +120,6 @@
                     const header = {
                         'Content-type': 'multipart/form-data'
                     }
-
-                    console.log(formData);
                     
                     axios.post('/api/v1/board', formData, header)
                         .then((resp) => {

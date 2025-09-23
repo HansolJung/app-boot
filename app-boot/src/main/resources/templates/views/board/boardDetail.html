@@ -74,8 +74,16 @@
         </section>
         <section class="text-center">
             <button type="button" class="btn btn-warning me-2" onclick="updateLike();">좋아요</button>
-            <button type="button" class="btn btn-primary me-2" onclick="updateBoard();">글 수정</button>
-            <button type="button" class="btn btn-danger me-2" onclick="deleteBoard();">글 삭제</button>
+            <button type="button" class="btn btn-primary me-2" onclick="updateBoard();"
+                sec:authorize="hasRole('ROLE_ADMIN')">글 수정</button>
+            <button type="button" class="btn btn-primary me-2" onclick="updateBoard();"
+                sec:authorize="hasRole('ROLE_USER')"
+                th:disabled="${!#strings.equals(#authentication.name, vo.writer)}">글 수정</button>
+            <button type="button" class="btn btn-danger me-2" onclick="deleteBoard();"
+                sec:authorize="hasRole('ROLE_ADMIN')">글 삭제</button>
+            <button type="button" class="btn btn-danger me-2" onclick="deleteBoard();"
+                sec:authorize="hasRole('ROLE_USER')"
+                th:disabled="${!#strings.equals(#authentication.name, vo.writer)}">글 삭제</button>
             <button type="button" class="btn btn-secondary" onclick="goList();">목록</button>
         </section>
     </main>

@@ -65,7 +65,8 @@
 				</nav>
             </section>
             <section class="row" style="margin-top: 15px;">
-                <div class="col-12" style="width: 100%; text-align: right; margin-right: 80px;">
+                <div class="col-12" style="width: 100%; text-align: right; margin-right: 80px;"
+                    sec:authorize="isAuthenticated()"> 
 					<button type="button" class="btn btn-primary" onclick="openModal('add');">글 등록</button>
 					<button type="button" class="btn btn-success" onclick="openModal('update');">글 수정</button>
                     <button type="button" class="btn btn-danger" onclick="deleteGallery();">글 삭제</button>
@@ -85,6 +86,7 @@
                 <div class="modal-body">
                     <form id="gallFrm">
                         <input type="hidden" id="nums" name="nums">
+                        <input type="hidden" id="writer" name="writer">
                         <div class="row mb-3">
                             <div class="col-auto pt-1">
                                 <label for="title" class="col-form-label">제목 : </label>
@@ -119,7 +121,7 @@
             </div>
         </div>
     </div>
-    <script>
+    <script th:inline="javascript">
 
         let modalType = '';
         let checked = [];
@@ -158,17 +160,26 @@
                         return false;
                     }
 
+                    // 권한 체크
+                    const currentUser = [[${#authentication.name}]];
+                    const role = [[${#authentication.authorities[0]}]];
+
+                    if (currentUser !== res.data.vo.writer && role.authority !== 'ROLE_ADMIN') {
+                        alert('본인이 작성한 글만 수정이 가능합니다.');
+                        return false;
+                    }
+
                     // 얻어온 이미지 상세 정보로 input 창 채우기
                     $('#nums').val(res.data.vo.nums);
                     $('#title').val(res.data.vo.title);
                     $('#fileName').val(res.data.vo.fileName);
 
+                    updateModal(titles[1]);
+    
                 }).catch((err) => {
                     alert(err);
                     return false;
                 });
-
-                updateModal(titles[1]);
             }
         }
 
@@ -263,12 +274,14 @@
                 const gallFrm = $('#gallFrm');   
                 const formData = new FormData(gallFrm[0]);
 
-                const header = {
-                    'Content-type': 'multipart/form-data'
+                const headers = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
                 }
 
                 try { // await 는 .then, .catch 를 사용할 수 없어서 try-catch 문으로 에러 메시지를 띄우도록 한다.
-                    const resp = await axios.post('/api/v1/gal', formData, header);
+                    const resp = await axios.post('/api/v1/gal', formData, headers);
 
                     if (resp.data.resultCode === 200) {
                         alert('이미지가 등록되었습니다.');
@@ -289,12 +302,14 @@
                 const gallFrm = $('#gallFrm');   
                 const formData = new FormData(gallFrm[0]);
 
-                const header = {
-                    'Content-type': 'multipart/form-data'
+                const headers = {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
                 }
 
                 try { // await 는 .then, .catch 를 사용할 수 없어서 try-catch 문으로 에러 메시지를 띄우도록 한다.
-                    const resp = await axios.put('/api/v1/gal', formData, header);
+                    const resp = await axios.put('/api/v1/gal', formData, headers);
 
                     if (resp.data.resultCode === 200) {
                         alert('이미지가 수정되었습니다.');
@@ -329,13 +344,15 @@
                 return false;
             }
 
-            const header = {
-                'Content-Type': 'application/json'
+            const headers = {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             }
 
             try { // await 는 .then, .catch 를 사용할 수 없어서 try-catch 문으로 에러 메시지를 띄우도록 한다.
                 // axios.delete 대신 post를 사용한 이유는 삭제할 아이디들을 URL로 전달하면 너무 길어지기 때문에 body 에 담아서 보내기 위함 
-                const resp = await axios.post('/api/v1/gal/delete', { numsList: checked }, header);  // 체크된 갤러리 id 값 배열을 전달하기
+                const resp = await axios.post('/api/v1/gal/delete', { numsList: checked }, headers);  // 체크된 갤러리 id 값 배열을 전달하기
                 
                 if (resp.data.resultCode === 200) {
                     alert('이미지가 삭제되었습니다.');
@@ -345,8 +362,11 @@
                 }
 
             } catch (err) {
-                alert(err);
+                // axiosCommon.js 에서 응답을 가로채기 때문에 또 alert 창을 띄울 필요는 없음.
+                //alert(err);
             }
+
+            checked.length = 0;
         }
 
         function getData() {

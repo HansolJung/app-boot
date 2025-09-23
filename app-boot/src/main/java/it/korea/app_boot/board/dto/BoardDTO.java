@@ -102,5 +102,7 @@ public class BoardDTO {
 		
 		// 첨부파일
 		private MultipartFile file;
+
+        private boolean isAdmin;
 	}
 }

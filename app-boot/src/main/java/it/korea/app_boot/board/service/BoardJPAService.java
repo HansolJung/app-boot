@@ -11,7 +11,6 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.javassist.NotFoundException;
-import org.aspectj.weaver.patterns.TypePatternQuestions.Question;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -167,6 +166,11 @@ public class BoardJPAService {
         BoardEntity entity = boardRepository.getBoard(request.getBrdId())   // fetch join 을 사용한 getBoard 메서드 호출
             .orElseThrow(()-> new RuntimeException("게시글 없음"));
 
+        if (!entity.getWriter().equals(request.getWriter()) &&
+                !request.isAdmin()) {   // 만약 로그인된 회원과 글 작성자가 다르고 어드민 권한까지 없다면...
+            throw new RuntimeException("본인이 작성한 게시글만 수정이 가능합니다.");
+        }
+        
         entity.setTitle(request.getTitle());
         entity.setContents(request.getContents());
 
@@ -227,17 +231,23 @@ public class BoardJPAService {
     /**
      * 게시글 삭제
      * @param brdId 게시글 아이디
+     * @param request
      * @return
      * @throws Exception
      */
     @Transactional
-    public Map<String, Object> deleteBoard(int brdId) throws Exception {
+    public Map<String, Object> deleteBoard(int brdId, BoardDTO.Request request) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
 
         BoardEntity entity = boardRepository.getBoard(brdId)   // fetch join 을 사용한 getBoard 메서드 호출
             .orElseThrow(()-> new RuntimeException("게시글 없음"));
         
         BoardDTO.Detail detail = BoardDTO.Detail.of(entity);
+
+        if (!detail.getWriter().equals(request.getWriter()) &&
+                !request.isAdmin()) {   // 만약 로그인된 회원과 글 작성자가 다르고 어드민 권한까지 없다면...
+            throw new RuntimeException("본인이 작성한 게시글만 삭제가 가능합니다.");
+        }
 
         boardRepository.delete(entity);
 

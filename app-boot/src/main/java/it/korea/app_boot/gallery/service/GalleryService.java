@@ -111,9 +111,14 @@ public class GalleryService {
         GalleryEntity entity = galleryRepository.findById(request.getNums())
             .orElseThrow(()-> new RuntimeException("갤러리 없음"));
 
-        entity.setTitle(request.getTitle());
-
         GalleryDTO detail = GalleryDTO.of(entity);
+
+        if (!detail.getWriter().equals(request.getWriter()) &&
+                !request.isAdmin()) {   // 만약 로그인된 회원과 갤러리 작성자가 다르고 어드민 권한까지 없다면...
+            throw new RuntimeException("본인이 작성한 갤러리만 수정이 가능합니다.");
+        }
+
+        entity.setTitle(request.getTitle());
 
         // 2. 업로드 할 파일이 있으면 업로드
         if (!request.getFile().isEmpty()) {
@@ -145,6 +150,11 @@ public class GalleryService {
         List<GalleryDTO> details = galleryRepository.findAllById(deleteDTO.getNumsList())
             .stream().map(GalleryDTO::of).toList();  // findAllById 로 갤러리 정보 리스트 얻어와서 DTO 리스트로 변환
         
+        if (!details.stream().allMatch(detail -> detail.getWriter().equals(deleteDTO.getWriter())) &&
+            !deleteDTO.isAdmin()) {  // 단 하나라도 본인이 작성한 갤러리가 아니고 어드민 권한까지 없다면...
+            throw new RuntimeException("본인이 작성한 갤러리만 삭제가 가능합니다.");
+        }
+
         galleryRepository.deleteAllById(deleteDTO.getNumsList());  // deleteAllById 로 DB 에서 전부 삭제
 
         if (details != null && details.size() > 0) {

@@ -4,7 +4,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import it.korea.app_boot.admin.dto.AdminUserRequestDTO;
 import it.korea.app_boot.user.dto.UserRequestDTO;
 import it.korea.app_boot.user.entity.UserEntity;
 import it.korea.app_boot.user.entity.UserRoleEntity;

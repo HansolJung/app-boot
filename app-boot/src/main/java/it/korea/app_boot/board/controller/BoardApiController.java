@@ -134,10 +134,14 @@ public class BoardApiController {
      * @throws Exception
      */
     @PutMapping("/board")
-    public ResponseEntity<Map<String, Object>> updateBoard(@Valid @ModelAttribute BoardDTO.Request request) throws Exception {
+    public ResponseEntity<Map<String, Object>> updateBoard(@Valid @ModelAttribute BoardDTO.Request request,
+            @AuthenticationPrincipal UserSecureDTO user) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         HttpStatus status = HttpStatus.OK;
-
+        
+        request.setWriter(user.getUserId());
+        request.setAdmin(user.getAuthorities().stream().anyMatch(auth -> 
+            auth.getAuthority().equals("ROLE_ADMIN")));    // ADMIN 권한 여부 가져와서 request 에 넣기
         resultMap = jpaService.updateBoard(request);
 
         return new ResponseEntity<>(resultMap, status);
@@ -150,11 +154,17 @@ public class BoardApiController {
      * @throws Exception
      */
     @DeleteMapping("/board/{brdId}")
-    public ResponseEntity<Map<String, Object>> deleteBoard(@PathVariable(name = "brdId") int brdId) throws Exception {
+    public ResponseEntity<Map<String, Object>> deleteBoard(@PathVariable(name = "brdId") int brdId,
+            @AuthenticationPrincipal UserSecureDTO user) throws Exception {
         Map<String, Object> resultMap = new HashMap<>();
         HttpStatus status = HttpStatus.OK;
+        BoardDTO.Request request = new BoardDTO.Request();
 
-        resultMap = jpaService.deleteBoard(brdId);
+        request.setWriter(user.getUserId());
+        request.setAdmin(user.getAuthorities().stream().anyMatch(auth -> 
+            auth.getAuthority().equals("ROLE_ADMIN")));    // ADMIN 권한 여부 가져와서 request 에 넣기
+
+        resultMap = jpaService.deleteBoard(brdId, request);
 
         return new ResponseEntity<>(resultMap, status);
     }

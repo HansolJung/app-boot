@@ -39,11 +39,11 @@ public class UserSearchSpecification implements Specification<UserEntity> {
         if (StringUtils.isNotBlank(searchDTO.getSearchText())) {
             String likeText = "%" + searchDTO.getSearchText() + "%";
 
-            Predicate userIdPredicate = cb.like(root.get("userId"), likeText);
-            Predicate userNamePredicate = cb.like(root.get("userName"), likeText);
-            predicates.add(cb.or(userIdPredicate, userNamePredicate));
-            //predicates.add(cb.like(root.get("userId"), likeText));
-            //predicates.add(cb.like(root.get("userName"), likeText));
+            predicates.add(cb.like(root.get("userId"), likeText));
+            predicates.add(cb.like(root.get("userName"), likeText));
+            Predicate orPredicate = orTogether(predicates, cb);
+            predicates.clear();
+            predicates.add(orPredicate);
         }
 
         if (StringUtils.isNotBlank(searchDTO.getDelYn()) && 
@@ -55,10 +55,10 @@ public class UserSearchSpecification implements Specification<UserEntity> {
     }
 
     private Predicate andTogether(List<Predicate> predicates, CriteriaBuilder cb) {
-        return cb.and(predicates.toArray(new Predicate[0])); 
+        return cb.and(predicates.toArray(new Predicate[0]));  // 타입 추론. array를 만들 때 new Predicate 객체로 만들겠다는 뜻.
     }
 
-    // private Predicate orTogether(List<Predicate> predicates, CriteriaBuilder cb) {
-    //     return cb.or(predicates.toArray(new Predicate[0]));   // 타입 추론. array를 만들 때 new Predicate 객체로 만들겠다는 뜻.
-    // }
+    private Predicate orTogether(List<Predicate> predicates, CriteriaBuilder cb) {
+        return cb.or(predicates.toArray(new Predicate[0]));   // 타입 추론. array를 만들 때 new Predicate 객체로 만들겠다는 뜻.
+    }
 }

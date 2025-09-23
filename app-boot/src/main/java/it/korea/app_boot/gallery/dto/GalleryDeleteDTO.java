@@ -9,4 +9,7 @@ import lombok.Setter;
 @Setter
 public class GalleryDeleteDTO {
     List<String> numsList;
+
+    private String writer;
+    private boolean isAdmin;
 }
