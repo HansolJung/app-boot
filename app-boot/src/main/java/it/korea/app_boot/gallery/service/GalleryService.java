@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -213,7 +212,7 @@ public class GalleryService {
         File file = new File(fullPath);
 
         if (!file.exists()) {
-            throw new NotFoundException("파일이 경로에 없음");
+            throw new RuntimeException("파일이 경로에 없음");
         }
 
         // 실제 파일 삭제

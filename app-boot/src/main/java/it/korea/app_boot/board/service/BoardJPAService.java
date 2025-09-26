@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -214,7 +213,7 @@ public class BoardJPAService {
                 File file = new File(fullPath);
 
                 if (!file.exists()) {
-                    throw new NotFoundException("파일이 경로에 없음");
+                    throw new RuntimeException("파일이 경로에 없음");
                 }
 
                 // 실제 파일 삭제
@@ -249,6 +248,7 @@ public class BoardJPAService {
             throw new RuntimeException("본인이 작성한 게시글만 삭제가 가능합니다.");
         }
 
+        // 게시글 삭제. cascade = CascadeType.ALL, orphanRemoval = true 옵션으로 인해 파일 엔티티까지 같이 지워짐.
         boardRepository.delete(entity);
 
         // 실제 파일 삭제는 제일 마지막에 진행
@@ -258,7 +258,7 @@ public class BoardJPAService {
                 File file = new File(fullPath);
 
                 if (!file.exists()) {
-                    throw new NotFoundException("파일이 경로에 없음");
+                    throw new RuntimeException("파일이 경로에 없음");
                 }
 
                 // 실제 파일 삭제
@@ -287,7 +287,7 @@ public class BoardJPAService {
         BoardFileDTO fileDTO = BoardFileDTO.of(
             fileRepository.findById(bfId)
                 .orElseThrow(()-> 
-                    new NotFoundException("파일정보 DB에 없음")));
+                    new RuntimeException("파일정보 DB에 없음")));
         
         String fullPath = fileDTO.getFilePath() + fileDTO.getStoredName();
         String fileName = fileDTO.getFileName();  // 다운로드할 때 사용
@@ -295,7 +295,7 @@ public class BoardJPAService {
         File file = new File(fullPath);
 
         if (!file.exists()) {
-            throw new NotFoundException("파일이 경로에 없음");
+            throw new RuntimeException("파일이 경로에 없음");
         }
 
         // 파일 타입 > NIO 를 이용한 타입 찾기
@@ -344,7 +344,7 @@ public class BoardJPAService {
         BoardFileEntity fileEntity = 
             fileRepository.findById(bfId)
                 .orElseThrow(()-> 
-                    new NotFoundException("파일정보 DB에 없음"));
+                    new RuntimeException("파일정보 DB에 없음"));
 
         BoardFileDTO fileDTO = BoardFileDTO.of(fileEntity);
 
@@ -359,7 +359,7 @@ public class BoardJPAService {
 
         File file = new File(fullPath);
         if (!file.exists()) {
-            throw new NotFoundException("파일이 경로에 없음");
+            throw new RuntimeException("파일이 경로에 없음");
         }
 
         // 실제 파일 삭제
